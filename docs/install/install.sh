@@ -484,9 +484,9 @@ done
 
 echo "[3] 初始化数据导入 ...... "
 # 创建数据库  && 导入数据
-echo "CREATE DATABASE jeepaydb DEFAULT CHARACTER SET utf8mb4" | docker exec -i mysql8 mysql -uroot -p$mysql_pwd
+echo "CREATE DATABASE jeepay DEFAULT CHARACTER SET utf8mb4" | docker exec -i mysql8 mysql -uroot -p$mysql_pwd
 assert_regular_file "$rootDir/sources/jeepay/docs/sql/init.sql" "MySQL 初始化脚本 init.sql"
-docker exec -i mysql8 sh -c "mysql -uroot -p$mysql_pwd --default-character-set=utf8mb4  jeepaydb" < $rootDir/sources/jeepay/docs/sql/init.sql
+docker exec -i mysql8 sh -c "mysql -uroot -p$mysql_pwd --default-character-set=utf8mb4  jeepay" < $rootDir/sources/jeepay/docs/sql/init.sql
 require_ok $? "导入 MySQL 初始化脚本 init.sql"
 
 echo "[3] Done. "

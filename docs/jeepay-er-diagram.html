@@ -1,0 +1,672 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Jeepay 数据库 ER 图</title>
+<style>
+  :root {
+    color-scheme: light;
+    --background: rgb(247 248 250);
+    --foreground: rgb(26 30 34);
+    --card: rgb(255 255 255);
+    --card-foreground: rgb(26 30 34);
+    --popover: rgb(255 255 255);
+    --popover-foreground: rgb(26 30 34);
+    --primary: rgb(47 96 204);
+    --primary-foreground: rgb(255 255 255);
+    --secondary: rgb(242 244 247);
+    --secondary-foreground: rgb(26 30 34);
+    --muted: rgb(242 244 247);
+    --muted-foreground: rgb(104 112 122);
+    --accent: rgb(236 240 246);
+    --accent-foreground: rgb(26 30 34);
+    --destructive: rgb(199 62 62);
+    --border: rgb(220 224 230);
+    --input: rgb(220 224 230);
+    --ring: rgb(47 96 204);
+    --radius-2xl: 16px;
+    --corner-shape: round;
+    --font-size-base: 16px;
+    --viz-series-1: rgb(47 96 204);
+    --viz-series-2: rgb(214 108 32);
+    --viz-series-3: rgb(38 148 74);
+    --viz-series-4: rgb(196 63 130);
+    --viz-series-5: rgb(120 86 214);
+    --viz-series-6: rgb(26 148 141);
+  }
+  html, body { margin: 0; }
+  body {
+    box-sizing: border-box;
+    padding: 16px;
+    background: var(--background);
+    color: var(--foreground);
+    font-family: "Segoe UI", "Microsoft YaHei", system-ui, sans-serif;
+  }
+  .card {
+    min-width: 0;
+    padding: 12px;
+    border-radius: var(--radius-2xl);
+    color: var(--card-foreground);
+    background: var(--card);
+    overflow: hidden;
+  }
+  .text-small { font-size: 13px; }
+  .text-muted { color: var(--muted-foreground); }
+  .tabular-nums { font-variant-numeric: tabular-nums; }
+  .sr-only {
+    position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+    overflow: hidden; clip-path: inset(50%); white-space: nowrap;
+  }
+  #er-controls, #er-status { display: none; }
+
+  html, body { margin: 0; }
+  body {
+    box-sizing: border-box;
+    padding: 16px;
+    background: var(--background);
+    color: var(--foreground);
+    font-family: "Segoe UI", "Microsoft YaHei", system-ui, sans-serif;
+    font-size: var(--font-size-base, 16px);
+  }
+  h1 { margin: 0 0 4px; font-size: 18px; font-weight: 500; }
+  .card {
+    min-width: 0;
+    padding: 12px;
+    border-radius: var(--radius-2xl);
+    color: var(--card-foreground);
+    background: var(--card);
+    overflow: hidden;
+  }
+  .viz-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 10px; }
+  .btn {
+    font: inherit;
+    padding: 6px 14px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--card);
+    color: var(--foreground);
+    cursor: pointer;
+  }
+  .btn:hover { background: var(--accent); }
+  .text-small { font-size: 13px; }
+  .text-muted { color: var(--muted-foreground); }
+  .tabular-nums { font-variant-numeric: tabular-nums; }
+  .sr-only {
+    position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+    overflow: hidden; clip-path: inset(50%); white-space: nowrap;
+  }
+  #jeepay-er-map .er-stage {
+    aspect-ratio: auto;
+    height: calc(100vh - 190px);
+    min-height: 420px;
+    max-height: none;
+  }
+</style>
+</head>
+<body>
+<h1>Jeepay 数据库 ER 图 · 23 张表</h1>
+<p class="text-small text-muted" style="margin: 0 0 10px;">拖动平移 · 滚轮缩放 · 点击任意表高亮它的关联表</p>
+<div id="jeepay-er-map">
+  <style>
+    /* Only used when this fragment is opened on its own, without the host theme tokens. */
+    #jeepay-er-map.er-standalone {
+      color-scheme: light dark;
+      --foreground: light-dark(rgb(26 30 34), rgb(236 238 241));
+      --card: light-dark(rgb(255 255 255), rgb(30 31 34));
+      --card-foreground: light-dark(rgb(26 30 34), rgb(236 238 241));
+      --muted-foreground: light-dark(rgb(104 112 122), rgb(152 158 166));
+      --border: light-dark(rgb(219 223 229), rgb(64 68 74));
+      --primary: light-dark(rgb(47 96 204), rgb(122 162 255));
+      --viz-series-1: light-dark(rgb(47 96 204), rgb(122 162 255));
+      --viz-series-2: light-dark(rgb(214 108 32), rgb(243 152 92));
+      --viz-series-3: light-dark(rgb(38 148 74), rgb(110 205 143));
+      --viz-series-4: light-dark(rgb(196 63 130), rgb(240 145 192));
+      --viz-series-5: light-dark(rgb(120 86 214), rgb(170 150 240));
+    }
+    #jeepay-er-map.er-standalone .er-stage {
+      background: var(--card);
+      border-radius: 12px;
+    }
+    #jeepay-er-map .er-stage {
+      width: 100%;
+      aspect-ratio: 4 / 3;
+      max-height: 620px;
+      cursor: grab;
+      touch-action: none;
+    }
+    #jeepay-er-map .er-stage.is-panning {
+      cursor: grabbing;
+    }
+    #jeepay-er-map .er-svg {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+    #jeepay-er-map .er-lane-title {
+      font-size: 13px;
+      font-weight: 500;
+      fill: var(--foreground);
+    }
+    #jeepay-er-map .er-lane-swatch {
+      opacity: 0.85;
+    }
+    #jeepay-er-map .er-node-box {
+      fill: var(--er-fill, var(--card));
+      stroke: var(--border);
+      stroke-width: 1;
+    }
+    #jeepay-er-map .er-node-title {
+      font-size: 13px;
+      font-weight: 500;
+      fill: var(--foreground);
+    }
+    #jeepay-er-map .er-node-sub {
+      font-size: 11px;
+      fill: var(--muted-foreground);
+    }
+    #jeepay-er-map .er-node-divider {
+      stroke: var(--border);
+      stroke-width: 1;
+    }
+    #jeepay-er-map .er-col-name {
+      font-size: 12px;
+      fill: var(--foreground);
+    }
+    #jeepay-er-map .er-col-key {
+      font-size: 11px;
+      fill: var(--muted-foreground);
+    }
+    #jeepay-er-map .er-node {
+      transition: opacity 0.15s ease;
+    }
+    #jeepay-er-map .er-node.is-dim {
+      opacity: 0.3;
+    }
+    #jeepay-er-map .er-node.is-active .er-node-box {
+      stroke: var(--primary);
+      stroke-width: 2;
+    }
+    #jeepay-er-map .er-edge-group {
+      transition: opacity 0.15s ease;
+    }
+    #jeepay-er-map .er-edge {
+      fill: none;
+      stroke: color-mix(in srgb, var(--foreground) 28%, transparent);
+      stroke-width: 1.1;
+    }
+    #jeepay-er-map .er-edge.is-weak {
+      stroke-dasharray: 4 4;
+    }
+    #jeepay-er-map .er-edge-label {
+      font-size: 11px;
+      fill: var(--foreground);
+      stroke: var(--card);
+      stroke-width: 3;
+      paint-order: stroke fill;
+      opacity: 0;
+    }
+    #jeepay-er-map .er-edge-group.is-dim {
+      opacity: 0.12;
+    }
+    #jeepay-er-map .er-edge-group.is-active .er-edge {
+      stroke: var(--primary);
+      stroke-width: 1.8;
+    }
+    #jeepay-er-map .er-edge-group.is-active .er-edge-label {
+      opacity: 1;
+    }
+    #jeepay-er-map .er-zoom-readout {
+      min-width: 4ch;
+      text-align: right;
+    }
+  </style>
+
+  <div class="card">
+    <div class="er-stage" id="er-stage">
+      <svg class="er-svg" id="er-svg" role="img" aria-label="Jeepay 数据库 ER 图">
+        <title>Jeepay 数据库 ER 图</title>
+        <defs>
+          <marker id="er-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="context-stroke"></path>
+          </marker>
+        </defs>
+        <g id="er-world"></g>
+      </svg>
+    </div>
+  </div>
+
+  <div class="viz-controls" id="er-controls">
+    <button type="button" class="btn" id="er-zoom-out" data-tooltip="缩小">缩小</button>
+    <button type="button" class="btn" id="er-zoom-in" data-tooltip="放大">放大</button>
+    <button type="button" class="btn" id="er-fit" data-tooltip="显示全部 23 张表">看全图</button>
+    <span class="text-small text-muted er-zoom-readout tabular-nums" id="er-zoom-readout">100%</span>
+  </div>
+
+  <p class="text-small text-muted" id="er-status" aria-live="polite">23 张表 · 5 个分组 · 点击表看关联</p>
+  <p class="sr-only" id="er-desc"></p>
+
+  <script>
+    (function () {
+      var root = document.getElementById('jeepay-er-map');
+      if (!root) { return; }
+      var stage = document.getElementById('er-stage');
+      var svg = document.getElementById('er-svg');
+      var world = document.getElementById('er-world');
+      var statusEl = document.getElementById('er-status');
+      var readoutEl = document.getElementById('er-zoom-readout');
+      var controlsEl = document.getElementById('er-controls');
+      var descEl = document.getElementById('er-desc');
+      var POSTER = !!window.__ER_POSTER__;
+
+      var rootStyle = window.getComputedStyle(root);
+      if (!rootStyle.getPropertyValue('--foreground').trim() || !rootStyle.getPropertyValue('--card').trim()) {
+        root.classList.add('er-standalone');
+      }
+
+      var NODE_W = 250, HEAD_H = 38, ROW_H = 17, NODE_GAP = 32, LANE_GAP = 160, PAD = 40, LANE_HEAD = 44;
+      var DEFAULT_STATUS = '23 张表 · 5 个分组 · 点击表看关联';
+
+      var MODULES = [
+        { id: 'sys', no: '①', title: '系统与权限 RBAC', series: '--viz-series-1' },
+        { id: 'mch', no: '②', title: '商户与服务商', series: '--viz-series-2' },
+        { id: 'cfg', no: '③', title: '支付方式与通道配置', series: '--viz-series-3' },
+        { id: 'ord', no: '④', title: '交易订单与通知', series: '--viz-series-4' },
+        { id: 'div', no: '⑤', title: '分账', series: '--viz-series-5' }
+      ];
+
+      var TABLES = [
+        { id: 't_sys_user', cn: '系统用户表', mod: 'sys', cols: [['sys_user_id', 'PK'], ['login_username', ''], ['telphone', ''], ['belong_info_id', 'FK'], ['sys_type', ''], ['is_admin', ''], ['state', '']] },
+        { id: 't_sys_user_auth', cn: '用户认证表', mod: 'sys', cols: [['auth_id', 'PK'], ['user_id', 'FK'], ['identity_type', ''], ['identifier', ''], ['credential', '']] },
+        { id: 't_sys_user_role_rela', cn: '用户-角色关联', mod: 'sys', cols: [['user_id', 'PK FK'], ['role_id', 'PK FK']] },
+        { id: 't_sys_role', cn: '系统角色表', mod: 'sys', cols: [['role_id', 'PK'], ['role_name', ''], ['sys_type', ''], ['belong_info_id', 'FK']] },
+        { id: 't_sys_role_ent_rela', cn: '角色-权限关联', mod: 'sys', cols: [['role_id', 'PK FK'], ['ent_id', 'PK FK']] },
+        { id: 't_sys_entitlement', cn: '系统权限表', mod: 'sys', cols: [['ent_id', 'PK'], ['sys_type', 'PK'], ['pid', 'FK'], ['ent_type', ''], ['menu_uri', ''], ['state', '']] },
+        { id: 't_sys_config', cn: '系统配置表', mod: 'sys', cols: [['config_key', 'PK'], ['config_name', ''], ['group_key', ''], ['config_val', '']] },
+        { id: 't_sys_log', cn: '系统操作日志', mod: 'sys', cols: [['sys_log_id', 'PK'], ['user_id', 'FK'], ['method_name', ''], ['req_url', '']] },
+
+        { id: 't_isv_info', cn: '服务商信息表', mod: 'mch', cols: [['isv_no', 'PK'], ['isv_name', ''], ['isv_short_name', ''], ['state', '']] },
+        { id: 't_mch_info', cn: '商户信息表', mod: 'mch', cols: [['mch_no', 'PK'], ['isv_no', 'FK'], ['init_user_id', 'FK'], ['mch_name', ''], ['type', ''], ['state', '']] },
+        { id: 't_mch_app', cn: '商户应用表', mod: 'mch', cols: [['app_id', 'PK'], ['mch_no', 'FK'], ['created_uid', ''], ['app_name', ''], ['app_secret', ''], ['state', '']] },
+
+        { id: 't_pay_way', cn: '支付方式表', mod: 'cfg', cols: [['way_code', 'PK'], ['way_name', '']] },
+        { id: 't_pay_interface_define', cn: '支付接口定义表', mod: 'cfg', cols: [['if_code', 'PK'], ['if_name', ''], ['is_mch_mode', ''], ['is_isv_mode', ''], ['way_codes', ''], ['state', '']] },
+        { id: 't_pay_interface_config', cn: '支付接口配置表', mod: 'cfg', cols: [['id', 'PK'], ['info_type', ''], ['info_id', 'FK'], ['if_code', 'FK'], ['if_rate', ''], ['state', '']] },
+        { id: 't_mch_pay_passage', cn: '商户支付通道表', mod: 'cfg', cols: [['id', 'PK'], ['mch_no', 'FK'], ['app_id', 'FK'], ['if_code', 'FK'], ['way_code', 'FK'], ['rate', ''], ['state', '']] },
+
+        { id: 't_pay_order', cn: '支付订单表', mod: 'ord', cols: [['pay_order_id', 'PK'], ['mch_no', 'FK'], ['isv_no', 'FK'], ['app_id', 'FK'], ['if_code', 'FK'], ['way_code', 'FK'], ['mch_order_no', ''], ['amount', ''], ['state', ''], ['refund_state', ''], ['refund_amount', ''], ['division_state', '']] },
+        { id: 't_refund_order', cn: '退款订单表', mod: 'ord', cols: [['refund_order_id', 'PK'], ['pay_order_id', 'FK'], ['mch_no', 'FK'], ['app_id', 'FK'], ['if_code', 'FK'], ['way_code', 'FK'], ['mch_refund_no', ''], ['refund_amount', ''], ['state', '']] },
+        { id: 't_transfer_order', cn: '转账订单表', mod: 'ord', cols: [['transfer_id', 'PK'], ['mch_no', 'FK'], ['isv_no', 'FK'], ['app_id', 'FK'], ['if_code', 'FK'], ['mch_order_no', ''], ['entry_type', ''], ['amount', ''], ['state', '']] },
+        { id: 't_mch_notify_record', cn: '商户通知记录表', mod: 'ord', cols: [['notify_id', 'PK'], ['order_id', 'FK'], ['order_type', ''], ['mch_no', 'FK'], ['app_id', 'FK'], ['notify_url', ''], ['state', ''], ['notify_count', '']] },
+        { id: 't_order_snapshot', cn: '订单接口数据快照', mod: 'ord', cols: [['order_id', 'PK FK'], ['order_type', 'PK'], ['mch_req_data', ''], ['channel_resp_data', '']] },
+
+        { id: 't_mch_division_receiver_group', cn: '分账账号组', mod: 'div', cols: [['receiver_group_id', 'PK'], ['mch_no', 'FK'], ['receiver_group_name', ''], ['auto_division_flag', '']] },
+        { id: 't_mch_division_receiver', cn: '分账接收者账号', mod: 'div', cols: [['receiver_id', 'PK'], ['receiver_group_id', 'FK'], ['mch_no', 'FK'], ['app_id', 'FK'], ['if_code', 'FK'], ['receiver_alias', ''], ['acc_type', ''], ['acc_no', ''], ['division_profit', ''], ['state', '']] },
+        { id: 't_pay_order_division_record', cn: '分账记录表', mod: 'div', cols: [['record_id', 'PK'], ['pay_order_id', 'FK'], ['receiver_id', 'FK'], ['receiver_group_id', 'FK'], ['mch_no', 'FK'], ['if_code', 'FK'], ['batch_order_id', ''], ['division_profit', ''], ['cal_division_amount', ''], ['state', '']] }
+      ];
+
+      var EDGES = [
+        { f: 't_sys_user', t: 't_sys_user_auth', on: 'user_id' },
+        { f: 't_sys_user', t: 't_sys_user_role_rela', on: 'user_id' },
+        { f: 't_sys_role', t: 't_sys_user_role_rela', on: 'role_id' },
+        { f: 't_sys_role', t: 't_sys_role_ent_rela', on: 'role_id' },
+        { f: 't_sys_entitlement', t: 't_sys_role_ent_rela', on: 'ent_id' },
+        { f: 't_sys_entitlement', t: 't_sys_entitlement', on: 'pid', self: true },
+        { f: 't_sys_user', t: 't_sys_log', on: 'user_id' },
+        { f: 't_sys_user', t: 't_mch_info', on: 'init_user_id' },
+        { f: 't_sys_user', t: 't_mch_info', on: 'belong_info_id' },
+        { f: 't_sys_role', t: 't_mch_info', on: 'belong_info_id' },
+        { f: 't_isv_info', t: 't_mch_info', on: 'isv_no' },
+        { f: 't_mch_info', t: 't_mch_app', on: 'mch_no' },
+        { f: 't_pay_interface_define', t: 't_pay_interface_config', on: 'if_code' },
+        { f: 't_mch_info', t: 't_pay_interface_config', on: 'info_id', weak: true },
+        { f: 't_mch_app', t: 't_pay_interface_config', on: 'info_id', weak: true },
+        { f: 't_isv_info', t: 't_pay_interface_config', on: 'info_id', weak: true },
+        { f: 't_mch_info', t: 't_mch_pay_passage', on: 'mch_no' },
+        { f: 't_mch_app', t: 't_mch_pay_passage', on: 'app_id' },
+        { f: 't_pay_interface_define', t: 't_mch_pay_passage', on: 'if_code' },
+        { f: 't_pay_way', t: 't_mch_pay_passage', on: 'way_code' },
+        { f: 't_mch_info', t: 't_pay_order', on: 'mch_no' },
+        { f: 't_mch_app', t: 't_pay_order', on: 'app_id' },
+        { f: 't_isv_info', t: 't_pay_order', on: 'isv_no' },
+        { f: 't_pay_interface_define', t: 't_pay_order', on: 'if_code' },
+        { f: 't_pay_way', t: 't_pay_order', on: 'way_code' },
+        { f: 't_pay_order', t: 't_refund_order', on: 'pay_order_id' },
+        { f: 't_pay_order', t: 't_mch_notify_record', on: 'order_id' },
+        { f: 't_refund_order', t: 't_mch_notify_record', on: 'order_id' },
+        { f: 't_transfer_order', t: 't_mch_notify_record', on: 'order_id' },
+        { f: 't_pay_order', t: 't_order_snapshot', on: 'order_id', weak: true },
+        { f: 't_refund_order', t: 't_order_snapshot', on: 'order_id', weak: true },
+        { f: 't_mch_info', t: 't_transfer_order', on: 'mch_no' },
+        { f: 't_mch_app', t: 't_transfer_order', on: 'app_id' },
+        { f: 't_pay_interface_define', t: 't_transfer_order', on: 'if_code' },
+        { f: 't_mch_info', t: 't_mch_division_receiver_group', on: 'mch_no' },
+        { f: 't_mch_division_receiver_group', t: 't_mch_division_receiver', on: 'receiver_group_id' },
+        { f: 't_mch_info', t: 't_mch_division_receiver', on: 'mch_no' },
+        { f: 't_mch_app', t: 't_mch_division_receiver', on: 'app_id' },
+        { f: 't_pay_interface_define', t: 't_mch_division_receiver', on: 'if_code' },
+        { f: 't_pay_order', t: 't_pay_order_division_record', on: 'pay_order_id' },
+        { f: 't_mch_division_receiver', t: 't_pay_order_division_record', on: 'receiver_id' },
+        { f: 't_mch_division_receiver_group', t: 't_pay_order_division_record', on: 'receiver_group_id' }
+      ];
+
+      var NS = 'http://www.w3.org/2000/svg';
+      function el(tag, attrs, text) {
+        var node = document.createElementNS(NS, tag);
+        if (attrs) { Object.keys(attrs).forEach(function (k) { node.setAttribute(k, attrs[k]); }); }
+        if (text !== undefined) { node.textContent = text; }
+        return node;
+      }
+
+      var nodes = {};
+      var laneTops = {};
+      var canvasW = PAD * 2 + MODULES.length * NODE_W + (MODULES.length - 1) * LANE_GAP;
+      var canvasH = 0;
+
+      MODULES.forEach(function (m, i) {
+        var x = PAD + i * (NODE_W + LANE_GAP);
+        var y = LANE_HEAD;
+        laneTops[m.id] = 0;
+        TABLES.filter(function (t) { return t.mod === m.id; }).forEach(function (t) {
+          var h = HEAD_H + t.cols.length * ROW_H + 8;
+          nodes[t.id] = { id: t.id, table: t, mod: m, x: x, y: y, w: NODE_W, h: h };
+          y += h + NODE_GAP;
+        });
+        canvasH = Math.max(canvasH, y - NODE_GAP + PAD);
+        m.laneX = x;
+      });
+
+      var canvas = { w: canvasW, h: canvasH };
+
+      // ---- edges ----
+      var slots = {};
+      function slotPush(key, item) {
+        if (!slots[key]) { slots[key] = []; }
+        slots[key].push(item);
+      }
+      function centerOf(n) { return { x: n.x + n.w / 2, y: n.y + n.h / 2 }; }
+      function sideFor(a, b) {
+        if (a.x + a.w <= b.x + 8) { return ['right', 'left']; }
+        if (b.x + b.w <= a.x + 8) { return ['left', 'right']; }
+        return (a.y + a.h / 2) < (b.y + b.h / 2) ? ['bottom', 'top'] : ['top', 'bottom'];
+      }
+      function portPoint(n, side, ratio) {
+        var lo = n.y + HEAD_H + 4, hi = n.y + n.h - 6;
+        if (hi <= lo) { lo = n.y + 6; hi = n.y + n.h - 6; }
+        var y = lo + (hi - lo) * ratio;
+        var lx = n.x + 14, hx = n.x + n.w - 14;
+        var x = lx + (hx - lx) * ratio;
+        if (side === 'right') { return { x: n.x + n.w, y: y }; }
+        if (side === 'left') { return { x: n.x, y: y }; }
+        if (side === 'bottom') { return { x: x, y: n.y + n.h }; }
+        return { x: x, y: n.y };
+      }
+      function bezierPoint(p0, p1, p2, p3, t) {
+        var mt = 1 - t;
+        return {
+          x: mt * mt * mt * p0.x + 3 * mt * mt * t * p1.x + 3 * mt * t * t * p2.x + t * t * t * p3.x,
+          y: mt * mt * mt * p0.y + 3 * mt * mt * t * p1.y + 3 * mt * t * t * p2.y + t * t * t * p3.y
+        };
+      }
+
+      var selfEdges = [];
+      EDGES.forEach(function (e) {
+        var a = nodes[e.f], b = nodes[e.t];
+        if (!a || !b) { return; }
+        if (e.self || e.f === e.t) { selfEdges.push(e); return; }
+        var sides = sideFor(a, b);
+        var ca = centerOf(a), cb = centerOf(b);
+        var keyA = e.f + '|' + sides[0], keyB = e.t + '|' + sides[1];
+        slotPush(keyA, { e: e, end: 'f', sort: (sides[0] === 'left' || sides[0] === 'right') ? cb.y : cb.x });
+        slotPush(keyB, { e: e, end: 't', sort: (sides[1] === 'left' || sides[1] === 'right') ? ca.y : ca.x });
+        e._sides = sides;
+      });
+
+      var edgeLayer = el('g', { class: 'er-edge-layer' });
+      var nodeLayer = el('g', { class: 'er-node-layer' });
+      var edgeObjs = [];
+
+      Object.keys(slots).forEach(function (key) {
+        var list = slots[key];
+        list.sort(function (p, q) { return p.sort - q.sort; });
+        list.forEach(function (item, i) {
+          var ratio = (i + 1) / (list.length + 1);
+          var id = key.split('|')[0], side = key.split('|')[1];
+          var pt = portPoint(nodes[id], side, ratio);
+          if (item.end === 'f') { item.e._p0 = pt; } else { item.e._p1 = pt; }
+        });
+      });
+
+      function buildEdge(e, path, label, labelPoint) {
+        var group = el('g', { class: 'er-edge-group' + (e.weak ? ' is-weak' : '') });
+        var p = el('path', { class: 'er-edge' + (e.weak ? ' is-weak' : ''), d: path, 'marker-end': 'url(#er-arrow)' });
+        var t = el('text', { class: 'er-edge-label', x: labelPoint.x, y: labelPoint.y - 4, 'text-anchor': 'middle' }, label);
+        group.appendChild(p);
+        group.appendChild(t);
+        edgeLayer.appendChild(group);
+        edgeObjs.push({ e: e, g: group, p: p });
+      }
+
+      EDGES.forEach(function (e) {
+        if (e.self || e.f === e.t) { return; }
+        if (!e._p0 || !e._p1) { return; }
+        var p0 = e._p0, p1 = e._p1, c1, c2;
+        var horizontal = Math.abs(p1.x - p0.x) >= Math.abs(p1.y - p0.y);
+        var dx = p1.x - p0.x, dy = p1.y - p0.y;
+        if (horizontal) {
+          c1 = { x: p0.x + dx * 0.45, y: p0.y };
+          c2 = { x: p1.x - dx * 0.45, y: p1.y };
+        } else {
+          c1 = { x: p0.x, y: p0.y + dy * 0.45 };
+          c2 = { x: p1.x, y: p1.y - dy * 0.45 };
+        }
+        var d = 'M' + p0.x + ',' + p0.y + ' C' + c1.x + ',' + c1.y + ' ' + c2.x + ',' + c2.y + ' ' + p1.x + ',' + p1.y;
+        buildEdge(e, d, e.on, bezierPoint(p0, c1, c2, p1, 0.5));
+      });
+
+      selfEdges.forEach(function (e) {
+        var n = nodes[e.f];
+        var out = 46;
+        var y0 = n.y + HEAD_H + 18, y1 = n.y + HEAD_H + 52;
+        var d = 'M' + n.x + ',' + y0 + ' C' + (n.x - out) + ',' + y0 + ' ' + (n.x - out) + ',' + y1 + ' ' + n.x + ',' + y1;
+        buildEdge(e, d, e.on + ' 自关联', { x: n.x - out / 2, y: (y0 + y1) / 2 });
+      });
+
+      // ---- lanes + nodes ----
+      MODULES.forEach(function (m) {
+        var g = el('g', { class: 'er-lane' });
+        var swatch = el('rect', { class: 'er-lane-swatch', x: m.laneX, y: 6, width: 12, height: 12, rx: 3 });
+        swatch.style.fill = 'var(' + m.series + ')';
+        g.appendChild(swatch);
+        g.appendChild(el('text', { class: 'er-lane-title', x: m.laneX + 20, y: 17 }, m.no + ' ' + m.title));
+        world.appendChild(g);
+      });
+
+      TABLES.forEach(function (t) {
+        var n = nodes[t.id];
+        var g = el('g', { class: 'er-node', 'data-id': t.id, transform: 'translate(' + n.x + ',' + n.y + ')' });
+        g.style.setProperty('--er-fill', 'color-mix(in srgb, var(' + n.mod.series + ') 14%, var(--card))');
+        g.appendChild(el('rect', { class: 'er-node-box', x: 0, y: 0, width: n.w, height: n.h, rx: 10 }));
+        g.appendChild(el('text', { class: 'er-node-title', x: 12, y: 17 }, t.cn));
+        g.appendChild(el('text', { class: 'er-node-sub', x: 12, y: 31 }, t.id));
+        g.appendChild(el('line', { class: 'er-node-divider', x1: 0, y1: HEAD_H, x2: n.w, y2: HEAD_H }));
+        t.cols.forEach(function (c, i) {
+          var y = HEAD_H + 14 + i * ROW_H;
+          g.appendChild(el('text', { class: 'er-col-name', x: 12, y: y }, c[0]));
+          if (c[1]) {
+            g.appendChild(el('text', { class: 'er-col-key', x: n.w - 12, y: y, 'text-anchor': 'end' }, c[1]));
+          }
+        });
+        nodeLayer.appendChild(g);
+        n.g = g;
+      });
+
+      world.appendChild(edgeLayer);
+      world.appendChild(nodeLayer);
+
+      // ---- screen-reader summary ----
+      var summary = MODULES.map(function (m) {
+        var list = TABLES.filter(function (t) { return t.mod === m.id; }).map(function (t) { return t.cn + '（' + t.id + '）'; });
+        return m.no + ' ' + m.title + '：' + list.join('、');
+      }).join('；');
+      descEl.textContent = '按 5 个业务分组排列的 ' + TABLES.length + ' 张表及其关联。' + summary + '。';
+
+      // ---- view ----
+      var view = { k: 1, tx: 0, ty: 0 };
+      var selected = null;
+      var fitPad = POSTER ? 0 : 18;
+
+      function stageSize() {
+        return { w: stage.clientWidth || 720, h: stage.clientHeight || 540 };
+      }
+      function clampView() {
+        var size = stageSize();
+        var cw = canvas.w * view.k, ch = canvas.h * view.k;
+        var slack = 60;
+        if (cw <= size.w) { view.tx = (size.w - cw) / 2; }
+        else { view.tx = Math.min(slack, Math.max(size.w - cw - slack, view.tx)); }
+        if (ch <= size.h) { view.ty = (size.h - ch) / 2; }
+        else { view.ty = Math.min(slack, Math.max(size.h - ch - slack, view.ty)); }
+      }
+      function apply() {
+        clampView();
+        world.setAttribute('transform', 'translate(' + view.tx + ',' + view.ty + ') scale(' + view.k + ')');
+        readoutEl.textContent = Math.round(view.k * 100) + '%';
+      }
+      function fitView(pad) {
+        var size = stageSize();
+        pad = typeof pad === 'number' ? pad : fitPad;
+        var k = Math.min((size.w - pad * 2) / canvas.w, (size.h - pad * 2) / canvas.h);
+        view.k = Math.max(0.15, Math.min(3, k));
+        view.tx = (size.w - canvas.w * view.k) / 2;
+        view.ty = (size.h - canvas.h * view.k) / 2;
+        apply();
+      }
+      function zoomAt(px, py, k) {
+        k = Math.max(0.15, Math.min(3, k));
+        var wx = (px - view.tx) / view.k, wy = (py - view.ty) / view.k;
+        view.k = k;
+        view.tx = px - wx * k;
+        view.ty = py - wy * k;
+        apply();
+      }
+
+      function syncViewBox() {
+        var size = stageSize();
+        svg.setAttribute('viewBox', '0 0 ' + size.w + ' ' + size.h);
+      }
+
+      function select(id) {
+        selected = id;
+        var near = {};
+        if (id) {
+          near[id] = true;
+          EDGES.forEach(function (e) {
+            if (e.f === id) { near[e.t] = true; }
+            if (e.t === id) { near[e.f] = true; }
+          });
+        }
+        TABLES.forEach(function (t) {
+          var g = nodes[t.id].g;
+          g.classList.toggle('is-active', !!id && t.id === id);
+          g.classList.toggle('is-dim', !!id && !near[t.id]);
+        });
+        edgeObjs.forEach(function (o) {
+          var inc = !!id && (o.e.f === id || o.e.t === id);
+          o.g.classList.toggle('is-active', inc);
+          o.g.classList.toggle('is-dim', !!id && !inc);
+        });
+        if (!id) {
+          statusEl.textContent = DEFAULT_STATUS;
+          return;
+        }
+        var out = 0, inn = 0, neighbors = {};
+        EDGES.forEach(function (e) {
+          if (e.f === id) { out += 1; neighbors[e.t] = true; }
+          if (e.t === id) { inn += 1; neighbors[e.f] = true; }
+        });
+        neighbors[id] = false;
+        var count = Object.keys(neighbors).filter(function (k) { return neighbors[k]; }).length;
+        statusEl.textContent = nodes[id].table.cn + '（' + id + '）· 关联 ' + count + ' 张表 · 出 ' + out + ' / 入 ' + inn;
+      }
+
+      var drag = null;
+      stage.addEventListener('pointerdown', function (ev) {
+        if (ev.pointerType === 'mouse' && ev.button !== 0) { return; }
+        drag = { id: ev.pointerId, x: ev.clientX, y: ev.clientY, tx: view.tx, ty: view.ty, moved: 0, target: ev.target };
+        try { stage.setPointerCapture(ev.pointerId); } catch (err) { /* ignore */ }
+        stage.classList.add('is-panning');
+      });
+      stage.addEventListener('pointermove', function (ev) {
+        if (!drag || ev.pointerId !== drag.id) { return; }
+        var dx = ev.clientX - drag.x, dy = ev.clientY - drag.y;
+        drag.moved = Math.max(drag.moved, Math.sqrt(dx * dx + dy * dy));
+        view.tx = drag.tx + dx;
+        view.ty = drag.ty + dy;
+        apply();
+      });
+      function endDrag(ev) {
+        if (!drag || ev.pointerId !== drag.id) { return; }
+        try { stage.releasePointerCapture(ev.pointerId); } catch (err) { /* ignore */ }
+        stage.classList.remove('is-panning');
+        if (drag.moved < 5) {
+          var target = drag.target;
+          var hit = target && target.closest ? target.closest('.er-node') : null;
+          select(hit ? hit.getAttribute('data-id') : null);
+        }
+        drag = null;
+      }
+      stage.addEventListener('pointerup', endDrag);
+      stage.addEventListener('pointercancel', function (ev) {
+        if (!drag || ev.pointerId !== drag.id) { return; }
+        stage.classList.remove('is-panning');
+        drag = null;
+      });
+      stage.addEventListener('wheel', function (ev) {
+        ev.preventDefault();
+        var rect = stage.getBoundingClientRect();
+        var factor = Math.exp(-ev.deltaY * 0.0015);
+        zoomAt(ev.clientX - rect.left, ev.clientY - rect.top, view.k * factor);
+      }, { passive: false });
+
+      document.getElementById('er-zoom-in').addEventListener('click', function () {
+        var size = stageSize();
+        zoomAt(size.w / 2, size.h / 2, view.k * 1.25);
+      });
+      document.getElementById('er-zoom-out').addEventListener('click', function () {
+        var size = stageSize();
+        zoomAt(size.w / 2, size.h / 2, view.k / 1.25);
+      });
+      document.getElementById('er-fit').addEventListener('click', function () { fitView(); });
+
+      function init() {
+        if (POSTER) {
+          controlsEl.hidden = true;
+          stage.style.aspectRatio = String(canvas.w) + ' / ' + String(canvas.h);
+          stage.style.maxHeight = 'none';
+        }
+        syncViewBox();
+        if (POSTER) { fitView(); } else { view.k = 1; view.tx = 16; view.ty = 16; apply(); }
+      }
+
+      init();
+      if (typeof ResizeObserver === 'function') {
+        var ro = new ResizeObserver(function () {
+          syncViewBox();
+          if (POSTER) { fitView(); } else { apply(); }
+        });
+        ro.observe(stage);
+      }
+
+      window.__jeepayEr = {
+        canvas: canvas,
+        fit: fitView,
+        zoom: function (k) { var size = stageSize(); zoomAt(size.w / 2, size.h / 2, k); },
+        select: select
+      };
+    })();
+  </script>
+</div>
+
+</body>
+</html>

@@ -7,7 +7,7 @@ services:
     environment:
       LANG: C.UTF-8
       MYSQL_ROOT_PASSWORD: "rootroot"
-      MYSQL_DATABASE: "jeepaydb"
+      MYSQL_DATABASE: "jeepay"
       MYSQL_USER: "jeepay"
       MYSQL_PASSWORD: "jeepay"
     ports:

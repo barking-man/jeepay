@@ -28,7 +28,7 @@ docker exec jeepaymanager sh -c "timeout 3 bash -c '</dev/tcp/redis/6379' && ech
 
 历史坑（V3.2.7 之前的老部署可能遇到）：
 - `application.yml` 里 `host: redis` / `mysql`，但容器名是 `redis6` / `mysql8` → 新版 `install.sh` 已给容器加 `--network-alias`。
-- `password: rootroot`（Compose 默认）与 `mysql_pwd=jeepaydb123456` 不一致 → 新版 `install.sh` 会自动 `sed` 替换。
+- `password: rootroot`（Compose 默认）与 `mysql_pwd=jeepay123456` 不一致 → 新版 `install.sh` 会自动 `sed` 替换。
 
 ## 业务触发 RocketMQ 时报 `connect to x.x.x.x:10911 failed`
 

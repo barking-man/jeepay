@@ -45,7 +45,7 @@ docker exec nginx118 nginx -t && docker exec nginx118 nginx -s reload
 ls -lt /tmp/jeepay-install-*.log | head -1
 
 # MySQL / Redis 直连
-docker exec -it mysql8 mysql -uroot -p'jeepaydb123456' jeepaydb
+docker exec -it mysql8 mysql -uroot -p'jeepay123456' jeepay
 docker exec -it redis6 redis-cli
 ```
 
@@ -64,7 +64,7 @@ wget -O uninstall.sh https://gitee.com/jeequan/jeepay/raw/master/docs/install/un
 | 变量 | 默认 | 场景 |
 |---|---|---|
 | `rootDir` | `/jeepayhomes` | 改部署目录 |
-| `mysql_pwd` | `jeepaydb123456` | 改 MySQL root 密码 |
+| `mysql_pwd` | `jeepay123456` | 改 MySQL root 密码 |
 | `mysqlHostPort` / `redisHostPort` | `3306` / `6379`（被占自动换到 `13306` / `16379`） | 固定到某个端口 |
 | `mysqlImage` / `redisImage` / `rocketmqImage` / `nginxImage` | SWR 官方 | 切内网仓库 / 回 Docker Hub |
 | `managerImage` / `merchantImage` / `paymentImage` | SWR `jeepay-*:3.2.0` | 换自有镜像 / 版本 |
